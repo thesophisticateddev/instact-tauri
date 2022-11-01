@@ -14,6 +14,10 @@ function App() {
     setGreetMsg(await invoke("greet", { name }));
   }
 
+  async function startListener(){
+    await invoke('clipboard_listener_service');
+  }
+
   return (
     <div className="container">
       <h1>Welcome to Tauri!</h1>
@@ -67,6 +71,11 @@ function App() {
             Greet
           </button>
         </div>
+      </div>
+      <div className="row">
+        <button type="button" onClick={() => startListener()}>
+          Start Listener
+        </button>
       </div>
 
       <p>{greetMsg}</p>
