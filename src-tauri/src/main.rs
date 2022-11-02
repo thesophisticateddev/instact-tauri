@@ -25,26 +25,34 @@ fn greet(name: &str) -> String {
 fn clipboard_listener_service(window: Window) {
     std::thread::spawn(move || {
         let mut ctx: ClipboardContext = ClipboardProvider::new().unwrap();
-        let mut stack: VecDeque<String> = VecDeque::new();
-      
+        // let stack: VecDeque<String> = VecDeque::new();
+        
         let delay = std::time::Duration::from_secs(5);
+        let mut old_string:String = String::new();
         loop {
-            let mut str = ctx.get_contents().unwrap();
-
-            // if stack.is_empty() {
+            
+            let copied_string = ctx.get_contents().unwrap();
+           
+            // let result = match old_string {
+            //     _ if old_string == copied_string => true,
+            //     _ => false
+            // };
+            if old_string.is_empty() || old_string.ne(&copied_string)  {
+                old_string = copied_string.clone();
                 //if the content has changed
-                println!("In the thread: clipboard contents: {}", str);
+                println!("In the thread: clipboard contents: {}", copied_string);
                 window
                     .emit(
                         "list-updated",
                         Payload {
-                            message: str.into(),
+                            message: copied_string.into(),
                         },
                     )
                     .unwrap();
                 println!("event emitted from rust");
-            //     stack.push_back(str);
-            // }
+                // old_string.clear();
+                // old_string.push_str(copied_string.as_str()); 
+            }
             std::thread::sleep(delay);
         }
     });
