@@ -1,9 +1,16 @@
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { invoke } from "@tauri-apps/api/tauri";
 import Image from "next/image";
 import reactLogo from "../assets/react.svg";
 import tauriLogo from "../assets/tauri.svg";
 import nextLogo from "../assets/next.svg";
+import { emit, listen } from "@tauri-apps/api/event";
+
+import {
+  isPermissionGranted,
+  requestPermission,
+  sendNotification,
+} from "@tauri-apps/api/notification";
 
 function App() {
   const [greetMsg, setGreetMsg] = useState("");
@@ -14,8 +21,27 @@ function App() {
     setGreetMsg(await invoke("greet", { name }));
   }
 
-  async function startListener(){
-    await invoke('clipboard_listener_service');
+  async function startListener() {
+    await invoke("clipboard_listener_service");
+  }
+
+  listen("list-updated", (event) => {
+    //TODO: render some components here or something
+    console.log("Event occured",event);
+  });
+
+ 
+
+  async function dispatchNotification(title, body) {
+    let permissionGranted = await isPermissionGranted();
+    if (!permissionGranted) {
+      const permission = await requestPermission();
+      permissionGranted = permission === "granted";
+    }
+    if (permissionGranted) {
+      // sendNotification("Tauri is awesome!");
+      sendNotification({ title, body ,icon:"../assets/tauri.svg" });
+    }
   }
 
   return (
@@ -74,6 +100,17 @@ function App() {
       </div>
       <div className="row">
         <button type="button" onClick={() => startListener()}>
+          Start Listener
+        </button>
+        <button
+          type="button"
+          onClick={() =>
+            dispatchNotification(
+              "Hello From Tauri",
+              "New text was copied"
+            )
+          }
+        >
           Start Listener
         </button>
       </div>
