@@ -29,9 +29,9 @@ fn clipboard_listener_service(window: Window) {
       
         let delay = std::time::Duration::from_secs(5);
         loop {
-            let str = ctx.get_contents().unwrap();
+            let mut str = ctx.get_contents().unwrap();
 
-            if stack.is_empty() || str != stack.back().to {
+            // if stack.is_empty() {
                 //if the content has changed
                 println!("In the thread: clipboard contents: {}", str);
                 window
@@ -43,8 +43,8 @@ fn clipboard_listener_service(window: Window) {
                     )
                     .unwrap();
                 println!("event emitted from rust");
-                stack.push(str);
-            }
+            //     stack.push_back(str);
+            // }
             std::thread::sleep(delay);
         }
     });
