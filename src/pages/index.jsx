@@ -1,20 +1,24 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState } from "react";
 import { invoke } from "@tauri-apps/api/tauri";
 import Image from "next/image";
-import reactLogo from "../assets/react.svg";
 import tauriLogo from "../assets/tauri.svg";
-import nextLogo from "../assets/next.svg";
 import { emit, listen } from "@tauri-apps/api/event";
+import { VStack, HStack, StackDivider, Container } from "@chakra-ui/react";
 
 import {
   isPermissionGranted,
   requestPermission,
   sendNotification,
 } from "@tauri-apps/api/notification";
+import Item from "../components/item";
 
 function App() {
   const [greetMsg, setGreetMsg] = useState("");
+  const [listenerState, setListenerState] = useState(false);
+  const [listenerButtonText, setListenerButtonText] =
+    useState("Start Listener");
   const [name, setName] = useState("");
+  const [list, setList] = useState([{ id: 0, text: "something here" }]);
 
   async function greet() {
     // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
@@ -27,10 +31,14 @@ function App() {
 
   listen("list-updated", (event) => {
     //TODO: render some components here or something
-    console.log("Event occured",event);
+    console.log("Event occured", event);
+    console.log("obj", event.payload);
+    console.log("list before", list);
+    list.push({ id: event.payload.count, text: event.payload.message });
+    // setList([...list, { id:event.payload.count, text:event.payload.message }]);
+    setList(list);
+    console.log("list after", list);
   });
-
- 
 
   async function dispatchNotification(title, body) {
     let permissionGranted = await isPermissionGranted();
@@ -40,26 +48,15 @@ function App() {
     }
     if (permissionGranted) {
       // sendNotification("Tauri is awesome!");
-      sendNotification({ title, body ,icon:"../assets/tauri.svg" });
+      sendNotification({ title, body, icon: "../assets/tauri.svg" });
     }
   }
 
   return (
-    <div className="container">
+    <Container className="">
       <h1>Welcome to Tauri!</h1>
 
-      <div className="row">
-        <span className="logos">
-          <a href="https://nextjs.org" target="_blank">
-            <Image
-              width={144}
-              height={144}
-              src={nextLogo}
-              className="logo next"
-              alt="Next logo"
-            />
-          </a>
-        </span>
+      <VStack>
         <span className="logos">
           <a href="https://tauri.app" target="_blank">
             <Image
@@ -71,22 +68,9 @@ function App() {
             />
           </a>
         </span>
-        <span className="logos">
-          <a href="https://reactjs.org" target="_blank">
-            <Image
-              width={144}
-              height={144}
-              src={reactLogo}
-              className="logo react"
-              alt="React logo"
-            />
-          </a>
-        </span>
-      </div>
+      </VStack>
 
-      <p>Click on the Tauri, Next, and React logos to learn more.</p>
-
-      <div className="row">
+      <HStack className="row">
         <div>
           <input
             id="greet-input"
@@ -97,26 +81,49 @@ function App() {
             Greet
           </button>
         </div>
-      </div>
-      <div className="row">
-        <button type="button" onClick={() => startListener()}>
-          Start Listener
+      </HStack>
+      <HStack className="row">
+        <button
+          type="button"
+          onClick={() => {
+            if (!listenerState) {
+              startListener();
+              setListenerState(true);
+              setListenerButtonText("Stop Listener");
+            }
+          }}
+        >
+          {listenerButtonText}
         </button>
         <button
           type="button"
           onClick={() =>
-            dispatchNotification(
-              "Hello From Tauri",
-              "New text was copied"
-            )
+            dispatchNotification("Hello From Tauri", "New text was copied")
           }
         >
-          Start Listener
+          Emit Notification
         </button>
-      </div>
+      </HStack>
 
       <p>{greetMsg}</p>
-    </div>
+      <VStack
+        divider={<StackDivider borderColor="gray" />}
+        spacing={4}
+        align="stretch"
+      >
+        <ul>
+          {list.map((item) => (
+            <li key={item.id}>
+              <Item
+                text={item.text}
+                title={`Content`}
+                desc={`Copied from desktop`}
+              />
+            </li>
+          ))}
+        </ul>
+      </VStack>
+    </Container>
   );
 }
 

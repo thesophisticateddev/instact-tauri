@@ -3,17 +3,16 @@
     windows_subsystem = "windows"
 )]
 
-use std::collections::VecDeque;
-
 use cli_clipboard::ClipboardContext;
 use cli_clipboard::ClipboardProvider;
+use std::thread;
 use tauri::SystemTray;
 use tauri::{CustomMenuItem, SystemTrayEvent, SystemTrayMenu, SystemTrayMenuItem};
 use tauri::{Manager, Window};
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
-
 #[derive(Clone, serde::Serialize)]
 struct Payload {
+    count: i32,
     message: String,
 }
 #[tauri::command]
@@ -21,45 +20,43 @@ fn greet(name: &str) -> String {
     format!("Hello, {}! You've been greeted from Rust!", name)
 }
 
-#[tauri::command]
 fn clipboard_listener_service(window: Window) {
-    std::thread::spawn(move || {
-        let mut ctx: ClipboardContext = ClipboardProvider::new().unwrap();
-        // let stack: VecDeque<String> = VecDeque::new();
-        
-        let delay = std::time::Duration::from_secs(5);
-        let mut old_string:String = String::new();
-        loop {
-            
-            let copied_string = ctx.get_contents().unwrap();
-           
-            // let result = match old_string {
-            //     _ if old_string == copied_string => true,
-            //     _ => false
-            // };
-            if old_string.is_empty() || old_string.ne(&copied_string)  {
-                old_string = copied_string.clone();
-                //if the content has changed
-                println!("In the thread: clipboard contents: {}", copied_string);
-                window
-                    .emit(
-                        "list-updated",
-                        Payload {
-                            message: copied_string.into(),
-                        },
-                    )
-                    .unwrap();
-                println!("event emitted from rust");
-                // old_string.clear();
-                // old_string.push_str(copied_string.as_str()); 
+    thread::Builder::new()
+        .name("thread-1".to_string())
+        .spawn(move || {
+            let mut ctx: ClipboardContext = ClipboardProvider::new().unwrap();
+
+            let delay = std::time::Duration::from_secs(2);
+            let mut old_string: String = String::new();
+            let mut ct = 0;
+            println!("Thread-1 started to listen to clipboard events");
+            loop {
+                let copied_string = ctx.get_contents().unwrap();
+
+                if old_string.is_empty() || old_string.ne(&copied_string) {
+                    old_string = copied_string.clone();
+                    //if the content has changed
+                    println!("In the thread: clipboard contents: {}", copied_string);
+                    ct += 1;
+                    window
+                        .emit(
+                            "list-updated",
+                            Payload {
+                                count: ct.into(),
+                                message: copied_string.into(),
+                            },
+                        )
+                        .unwrap();
+                    println!("event emitted from rust");
+                }
+                std::thread::sleep(delay);
             }
-            std::thread::sleep(delay);
-        }
-    });
+        });
 }
 
-fn main() {
+pub fn main() {
     // here `"quit".to_string()` defines the menu item id, and the second parameter is the menu item label.
+
     let quit = CustomMenuItem::new("quit".to_string(), "Quit");
     let hide = CustomMenuItem::new("hide".to_string(), "Hide");
     let show = CustomMenuItem::new("show".to_string(), "Show");
@@ -109,28 +106,30 @@ fn main() {
             },
             _ => {}
         })
-        .invoke_handler(tauri::generate_handler![greet, clipboard_listener_service])
+        .invoke_handler(tauri::generate_handler![greet])
         .setup(|app| {
             // listen to the `event-name` (emitted on any window)
-            let main_window = app.get_window("main").unwrap();
 
+            let main_window = app.get_window("main").unwrap();
+            clipboard_listener_service(main_window);
             // listen to the `event-name` (emitted on the `main` window)
-            let id = main_window.listen("list-updated", |event| {
-                println!("got window event-name with payload {:?}", event.payload());
-            });
+            // let id = main_window.listen("list-updated", |event| {
+            //     println!("got window event-name with payload {:?}", event.payload());
+            // });
             // unlisten to the event using the `id` returned on the `listen` function
             // an `once` API is also exposed on the `Window` struct
-            main_window.unlisten(id);
+            // main_window.unlisten(id);
 
             // emit the `event-name` event to the `main` window
-            main_window
-                .emit(
-                    "list-updated",
-                    Payload {
-                        message: "Tauri is awesome!".into(),
-                    },
-                )
-                .unwrap();
+            // main_window
+            //     .emit(
+            //         "list-updated",
+            //         Payload {
+            //             count: 0,
+            //             message: "Tauri is awesome!".into(),
+            //         },
+            //     )
+                // .unwrap();
             Ok(())
         })
         .run(tauri::generate_context!())
