@@ -51,7 +51,7 @@ fn clipboard_listener_service(window: Window) {
                 }
                 std::thread::sleep(delay);
             }
-        });
+        }).unwrap();
 }
 
 pub fn main() {
