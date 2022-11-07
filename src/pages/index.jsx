@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { invoke } from "@tauri-apps/api/tauri";
 import Image from "next/image";
 import tauriLogo from "../assets/tauri.svg";
@@ -18,7 +18,11 @@ function App() {
   const [listenerButtonText, setListenerButtonText] =
     useState("Start Listener");
   const [name, setName] = useState("");
-  const [list, setList] = useState([{ id: 0, text: "something here" }]);
+  const [list, setList] = useState([]);
+
+  useEffect(() => {
+    console.log("list ", list);
+  }, [list]);
 
   async function greet() {
     // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
@@ -34,9 +38,30 @@ function App() {
     console.log("Event occured", event);
     console.log("obj", event.payload);
     console.log("list before", list);
-    list.push({ id: event.payload.count, text: event.payload.message });
+
+    // let arr = list;
+    // arr.push({ id: event.payload.count, text: event.payload.message });
+    // list.push({ id: event.payload.count, text: event.payload.message });
     // setList([...list, { id:event.payload.count, text:event.payload.message }]);
-    setList(list);
+    // setList(arr);
+    // setList(list);
+
+    // console.log("first temp", temp);
+    // let temp = [...list, { id: event.payload.count, text: event.payload.message }];
+    
+    let temp = { id: event.payload.count, text: event.payload.message };
+    dispatchNotification("Copied text saved to clipboard",temp.text);
+
+    setList(prevList => [...prevList, temp]); //simple value
+
+    // setList((list) => [
+    //   ...list,
+    //   { id: event.payload.count, text: event.payload.message },
+    // ]);
+    // let temp = [...list, { id: event.payload.count, text: event.payload.message }];
+    // console.log(" ntn temp", temp);
+
+    // setList(temp);
     console.log("list after", list);
   });
 
@@ -53,7 +78,7 @@ function App() {
   }
 
   return (
-    <Container className="">
+    <Container>
       <h1>Welcome to Tauri!</h1>
 
       <VStack>
@@ -70,7 +95,7 @@ function App() {
         </span>
       </VStack>
 
-      <HStack className="row">
+      <HStack >
         <div>
           <input
             id="greet-input"
@@ -82,7 +107,7 @@ function App() {
           </button>
         </div>
       </HStack>
-      <HStack className="row">
+      <HStack>
         <button
           type="button"
           onClick={() => {
@@ -112,15 +137,17 @@ function App() {
         align="stretch"
       >
         <ul>
-          {list.map((item) => (
-            <li key={item.id}>
+          {list?.map((item) => {
+            console.log("mapping list ==> ", item);
+            return (
               <Item
+                key={item.id}
                 text={item.text}
                 title={`Content`}
                 desc={`Copied from desktop`}
               />
-            </li>
-          ))}
+            );
+          })}
         </ul>
       </VStack>
     </Container>

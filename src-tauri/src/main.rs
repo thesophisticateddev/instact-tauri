@@ -33,7 +33,7 @@ fn clipboard_listener_service(window: Window) {
             loop {
                 let copied_string = ctx.get_contents().unwrap();
 
-                if old_string.is_empty() || old_string.ne(&copied_string) {
+                if old_string.ne(&copied_string) {
                     old_string = copied_string.clone();
                     //if the content has changed
                     println!("In the thread: clipboard contents: {}", copied_string);
