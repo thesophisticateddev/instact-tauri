@@ -33,37 +33,28 @@ function App() {
     await invoke("clipboard_listener_service");
   }
 
-  listen("list-updated", (event) => {
-    //TODO: render some components here or something
-    console.log("Event occured", event);
-    console.log("obj", event.payload);
-    console.log("list before", list);
+  // listen("test", (event) => {
+  //   console.log("This is the test event", event.payload);
+  // });
 
-    // let arr = list;
-    // arr.push({ id: event.payload.count, text: event.payload.message });
-    // list.push({ id: event.payload.count, text: event.payload.message });
-    // setList([...list, { id:event.payload.count, text:event.payload.message }]);
-    // setList(arr);
-    // setList(list);
+  // create a new webview window and emit an event only to that window
+  useEffect(() => {
+    const unlisten = listen("list-updated", (event) => {
+      console.log("Event occured", event);
+      console.log("obj", event.payload);
+      console.log("list before", list);
+      let temp = { id: event.payload.count, text: event.payload.message };
+      dispatchNotification("Copied text saved to clipboard", temp.text);
 
-    // console.log("first temp", temp);
-    // let temp = [...list, { id: event.payload.count, text: event.payload.message }];
-    
-    let temp = { id: event.payload.count, text: event.payload.message };
-    dispatchNotification("Copied text saved to clipboard",temp.text);
+      setList((prevList) => [...prevList, temp]); //simple value
 
-    setList(prevList => [...prevList, temp]); //simple value
+      console.log("list after", list);
+    });
 
-    // setList((list) => [
-    //   ...list,
-    //   { id: event.payload.count, text: event.payload.message },
-    // ]);
-    // let temp = [...list, { id: event.payload.count, text: event.payload.message }];
-    // console.log(" ntn temp", temp);
-
-    // setList(temp);
-    console.log("list after", list);
-  });
+    return () => {
+      unlisten.then((f) => f());
+    };
+  }, []);
 
   async function dispatchNotification(title, body) {
     let permissionGranted = await isPermissionGranted();
@@ -78,8 +69,8 @@ function App() {
   }
 
   return (
-    <Container>
-      <h1>Welcome to Tauri!</h1>
+    <Container alignContent="center">
+      <h1>Custom Clipboard App</h1>
 
       <VStack>
         <span className="logos">
@@ -94,41 +85,45 @@ function App() {
           </a>
         </span>
       </VStack>
+      <VStack>
+        <HStack>
+          <div>
+            <input
+              id="greet-input"
+              onChange={(e) => setName(e.currentTarget.value)}
+              placeholder="Enter a name..."
+            />
+            <button type="button" onClick={() => greet()}>
+              Greet
+            </button>
+          </div>
+        </HStack>
+      </VStack>
 
-      <HStack >
-        <div>
-          <input
-            id="greet-input"
-            onChange={(e) => setName(e.currentTarget.value)}
-            placeholder="Enter a name..."
-          />
-          <button type="button" onClick={() => greet()}>
-            Greet
+      <VStack>
+        <HStack>
+          <button
+            type="button"
+            onClick={() => {
+              if (!listenerState) {
+                startListener();
+                setListenerState(true);
+                setListenerButtonText("Stop Listener");
+              }
+            }}
+          >
+            {listenerButtonText}
           </button>
-        </div>
-      </HStack>
-      <HStack>
-        <button
-          type="button"
-          onClick={() => {
-            if (!listenerState) {
-              startListener();
-              setListenerState(true);
-              setListenerButtonText("Stop Listener");
+          <button
+            type="button"
+            onClick={() =>
+              dispatchNotification("Hello From Tauri", "New text was copied")
             }
-          }}
-        >
-          {listenerButtonText}
-        </button>
-        <button
-          type="button"
-          onClick={() =>
-            dispatchNotification("Hello From Tauri", "New text was copied")
-          }
-        >
-          Emit Notification
-        </button>
-      </HStack>
+          >
+            Emit Notification
+          </button>
+        </HStack>
+      </VStack>
 
       <p>{greetMsg}</p>
       <VStack

@@ -20,10 +20,19 @@ fn greet(name: &str) -> String {
     format!("Hello, {}! You've been greeted from Rust!", name)
 }
 
+#[tauri::command]
+fn init_process(window: Window) {
+    let delay = std::time::Duration::from_secs(10);
+  std::thread::spawn(move || {
+    loop {
+      window.emit("test", Payload { count:0,message: "Tauri is awesome!".into() }).unwrap();
+      std::thread::sleep(delay);
+    }
+  });
+}
+
 fn clipboard_listener_service(window: Window) {
-    thread::Builder::new()
-        .name("thread-1".to_string())
-        .spawn(move || {
+    thread::spawn(move || {
             let mut ctx: ClipboardContext = ClipboardProvider::new().unwrap();
 
             let delay = std::time::Duration::from_secs(2);
@@ -51,7 +60,7 @@ fn clipboard_listener_service(window: Window) {
                 }
                 std::thread::sleep(delay);
             }
-        }).unwrap();
+        });
 }
 
 pub fn main() {
@@ -106,30 +115,12 @@ pub fn main() {
             },
             _ => {}
         })
-        .invoke_handler(tauri::generate_handler![greet])
+        .invoke_handler(tauri::generate_handler![greet,init_process])
         .setup(|app| {
             // listen to the `event-name` (emitted on any window)
 
             let main_window = app.get_window("main").unwrap();
             clipboard_listener_service(main_window);
-            // listen to the `event-name` (emitted on the `main` window)
-            // let id = main_window.listen("list-updated", |event| {
-            //     println!("got window event-name with payload {:?}", event.payload());
-            // });
-            // unlisten to the event using the `id` returned on the `listen` function
-            // an `once` API is also exposed on the `Window` struct
-            // main_window.unlisten(id);
-
-            // emit the `event-name` event to the `main` window
-            // main_window
-            //     .emit(
-            //         "list-updated",
-            //         Payload {
-            //             count: 0,
-            //             message: "Tauri is awesome!".into(),
-            //         },
-            //     )
-                // .unwrap();
             Ok(())
         })
         .run(tauri::generate_context!())
