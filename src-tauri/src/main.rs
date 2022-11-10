@@ -9,11 +9,13 @@ use std::thread;
 use tauri::SystemTray;
 use tauri::{CustomMenuItem, SystemTrayEvent, SystemTrayMenu, SystemTrayMenuItem};
 use tauri::{Manager, Window};
+use active_win_pos_rs::get_active_window;
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
 #[derive(Clone, serde::Serialize)]
 struct Payload {
     count: i32,
     message: String,
+    current_window:String,
 }
 #[tauri::command]
 fn greet(name: &str) -> String {
@@ -23,44 +25,63 @@ fn greet(name: &str) -> String {
 #[tauri::command]
 fn init_process(window: Window) {
     let delay = std::time::Duration::from_secs(10);
-  std::thread::spawn(move || {
-    loop {
-      window.emit("test", Payload { count:0,message: "Tauri is awesome!".into() }).unwrap();
-      std::thread::sleep(delay);
-    }
-  });
+    std::thread::spawn(move || loop {
+        window
+            .emit(
+                "test",
+                Payload {
+                    count: 0,
+                    message: "Tauri is awesome!".into(),
+                    current_window:"Active window".into(),
+                },
+            )
+            .unwrap();
+        std::thread::sleep(delay);
+    });
 }
 
 fn clipboard_listener_service(window: Window) {
     thread::spawn(move || {
-            let mut ctx: ClipboardContext = ClipboardProvider::new().unwrap();
+        let mut ctx: ClipboardContext = ClipboardProvider::new().unwrap();
 
-            let delay = std::time::Duration::from_secs(2);
-            let mut old_string: String = String::new();
-            let mut ct = 0;
-            println!("Thread-1 started to listen to clipboard events");
-            loop {
-                let copied_string = ctx.get_contents().unwrap();
+        let delay = std::time::Duration::from_secs(1);
+        let mut old_string: String = String::new();
+        let mut ct = 0;
+        println!("Thread-1 started to listen to clipboard events");
+        loop {
+            let copied_string = ctx.get_contents().unwrap();
+          
 
-                if old_string.ne(&copied_string) {
-                    old_string = copied_string.clone();
-                    //if the content has changed
-                    println!("In the thread: clipboard contents: {}", copied_string);
-                    ct += 1;
-                    window
-                        .emit(
-                            "list-updated",
-                            Payload {
-                                count: ct.into(),
-                                message: copied_string.into(),
-                            },
-                        )
-                        .unwrap();
-                    println!("event emitted from rust");
+            if old_string.ne(&copied_string) {
+                old_string = copied_string.clone();
+                //if the content has changed
+                println!("In the thread: clipboard contents: {}", copied_string);
+                let mut screen:String = String::new();
+                match get_active_window() {
+                    Ok(active_window) => {
+                        println!("active window: {:#?}", active_window);
+                        screen = active_window.title;
+                    },
+                    Err(()) => {
+                        println!("error occurred while getting the active window");
+                    }
                 }
-                std::thread::sleep(delay);
+                ct += 1;
+                window
+                    .emit(
+                        "list-updated",
+                        Payload {
+                            count: ct.into(),
+                            message: copied_string.into(),
+                            current_window: screen,
+                        },
+                    )
+                    .unwrap();
+                println!("event emitted from rust");
             }
-        });
+            std::thread::sleep(delay);
+        }
+    });
 }
 
 pub fn main() {
@@ -115,7 +136,7 @@ pub fn main() {
             },
             _ => {}
         })
-        .invoke_handler(tauri::generate_handler![greet,init_process])
+        .invoke_handler(tauri::generate_handler![greet, init_process])
         .setup(|app| {
             // listen to the `event-name` (emitted on any window)
 

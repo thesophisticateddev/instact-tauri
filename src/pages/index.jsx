@@ -43,7 +43,7 @@ function App() {
       console.log("Event occured", event);
       console.log("obj", event.payload);
       console.log("list before", list);
-      let temp = { id: event.payload.count, text: event.payload.message };
+      let temp = { id: event.payload.count, text: event.payload.message, source: event.payload.current_window };
       dispatchNotification("Copied text saved to clipboard", temp.text);
 
       setList((prevList) => [...prevList, temp]); //simple value
@@ -64,7 +64,7 @@ function App() {
     }
     if (permissionGranted) {
       // sendNotification("Tauri is awesome!");
-      sendNotification({ title, body, icon: "../assets/tauri.svg" });
+      sendNotification({ title, body, icon: "../../src-tauri/icons/icon.ico" });
     }
   }
 
@@ -139,7 +139,7 @@ function App() {
                 key={item.id}
                 text={item.text}
                 title={`Content`}
-                desc={`Copied from desktop`}
+                source={item.source}
               />
             );
           })}
