@@ -3,19 +3,20 @@
     windows_subsystem = "windows"
 )]
 
+use active_win_pos_rs::get_active_window;
 use cli_clipboard::ClipboardContext;
 use cli_clipboard::ClipboardProvider;
 use std::thread;
 use tauri::SystemTray;
 use tauri::{CustomMenuItem, SystemTrayEvent, SystemTrayMenu, SystemTrayMenuItem};
 use tauri::{Manager, Window};
-use active_win_pos_rs::get_active_window;
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
 #[derive(Clone, serde::Serialize)]
 struct Payload {
     count: i32,
     message: String,
-    current_window:String,
+    current_window: String,
+    process: String,
 }
 #[tauri::command]
 fn greet(name: &str) -> String {
@@ -32,7 +33,8 @@ fn init_process(window: Window) {
                 Payload {
                     count: 0,
                     message: "Tauri is awesome!".into(),
-                    current_window:"Active window".into(),
+                    current_window: "Active window".into(),
+                    process: "Current process".into(),
                 },
             )
             .unwrap();
@@ -50,20 +52,22 @@ fn clipboard_listener_service(window: Window) {
         println!("Thread-1 started to listen to clipboard events");
         loop {
             let copied_string = ctx.get_contents().unwrap();
-          
 
             if old_string.ne(&copied_string) {
                 old_string = copied_string.clone();
                 //if the content has changed
-                println!("In the thread: clipboard contents: {}", copied_string);
-                let mut screen:String = String::new();
+             
+                let screen: String;
+                let mut proc: String = String::new();
                 match get_active_window() {
                     Ok(active_window) => {
-                        println!("active window: {:#?}", active_window);
+                        // println!("active window: {:#?}", active_window);
                         screen = active_window.title;
-                    },
+                        proc = active_window.process_name;
+                    }
                     Err(()) => {
-                        println!("error occurred while getting the active window");
+                        screen = "Could not get current screen".into();
+                        // println!("error occurred while getting the active window");
                     }
                 }
                 ct += 1;
@@ -73,7 +77,8 @@ fn clipboard_listener_service(window: Window) {
                         Payload {
                             count: ct.into(),
                             message: copied_string.into(),
-                            current_window: screen,
+                            current_window: screen.into(),
+                            process: proc.into(),
                         },
                     )
                     .unwrap();
