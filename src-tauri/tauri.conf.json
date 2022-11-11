@@ -33,7 +33,7 @@
         "icons/icon.icns",
         "icons/icon.ico"
       ],
-      "identifier": "",
+      "identifier": "com.test.dev",
       "longDescription": "",
       "macOS": {
         "entitlements": null,
