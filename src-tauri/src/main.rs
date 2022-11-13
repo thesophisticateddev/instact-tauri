@@ -3,6 +3,7 @@
     windows_subsystem = "windows"
 )]
 
+mod oneai;
 use active_win_pos_rs::get_active_window;
 use cli_clipboard::ClipboardContext;
 use cli_clipboard::ClipboardProvider;
@@ -42,6 +43,12 @@ fn init_process(window: Window) {
     });
 }
 
+
+fn get_names(text:String){
+  println!("task to get data from api");
+  oneai::get_names_from_text(text);
+}
+
 fn clipboard_listener_service(window: Window) {
     thread::spawn(move || {
         let mut ctx: ClipboardContext = ClipboardProvider::new().unwrap();
@@ -71,6 +78,7 @@ fn clipboard_listener_service(window: Window) {
                     }
                 }
                 ct += 1;
+                get_names(copied_string.clone());
                 window
                     .emit(
                         "list-updated",
@@ -82,6 +90,7 @@ fn clipboard_listener_service(window: Window) {
                         },
                     )
                     .unwrap();
+
                 println!("event emitted from rust");
             }
             std::thread::sleep(delay);
