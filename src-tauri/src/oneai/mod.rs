@@ -6,6 +6,9 @@ use dates::get_dates_from_text;
 use names::get_names_from_text;
 
 pub fn get_names(text:String) -> Vec<Label>{
+    if text.is_empty(){
+        ()
+    }
     println!("task to get data from api");
     let result = get_names_from_text(text);
     
@@ -26,6 +29,9 @@ pub fn get_names(text:String) -> Vec<Label>{
 }
 
 pub fn get_dates(text: String)-> Vec<Label>{
+    if text.is_empty(){
+        ()
+    }
     println!("task to get data from api");
     let result = get_dates_from_text(text);
     
