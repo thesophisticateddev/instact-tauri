@@ -5,19 +5,9 @@ import tauriLogo from "../assets/tauri.svg";
 import { emit, listen } from "@tauri-apps/api/event";
 import {
   VStack,
-  HStack,
   StackDivider,
   Container,
   Heading,
-  Menu,
-  MenuButton,
-  MenuList,
-  MenuItem,
-  MenuItemOption,
-  MenuGroup,
-  MenuOptionGroup,
-  MenuDivider,
-  ChevronDownIcon,
   Center,
   Accordion,
 } from "@chakra-ui/react";
@@ -27,27 +17,20 @@ import {
   requestPermission,
   sendNotification,
 } from "@tauri-apps/api/notification";
-import Item from "../components/item";
+
 import ContentAccordion from "../components/ContentAccordion";
 
 function App() {
-  const [greetMsg, setGreetMsg] = useState("");
-  const [name, setName] = useState("");
   const [list, setList] = useState([]);
 
   useEffect(() => {
     console.log("list ", list);
   }, [list]);
 
-  async function greet() {
-    // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
-    setGreetMsg(await invoke("greet", { name }));
-  }
 
   // create a new webview window and emit an event only to that window
   useEffect(() => {
     const unlisten = listen("list-updated", (event) => {
-      console.log("Event occured", event);
       console.log("obj", event.payload);
       console.log("list before", list);
       let temp = {
@@ -55,6 +38,8 @@ function App() {
         text: event.payload.message,
         source: event.payload.current_window,
         process: event.payload.process,
+        names: event.payload.names_detected,
+        dates: event.payload.dates_detected,
       };
       dispatchNotification("Copied text saved to clipboard", temp.text);
 
@@ -104,19 +89,6 @@ function App() {
         <Center>
           <Heading>Content</Heading>
         </Center>
-
-        {/* <ul>
-          {list?.map((item) => {
-            console.log("mapping list ==> ", item);
-            return (
-              <Item
-                key={item.id}
-                text={item.text}
-                source={item.source}
-              />
-            );
-          })}
-        </ul> */}
         <Accordion defaultIndex={[0]} allowMultiple>
           {list.map((item) => {
             return (
@@ -124,6 +96,8 @@ function App() {
                 text={item.text}
                 source={item.source}
                 process={item.process}
+                dates={item.dates}
+                names={item.names}
                 id={item.id}
               />
             );

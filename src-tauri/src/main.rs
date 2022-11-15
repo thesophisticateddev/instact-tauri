@@ -3,6 +3,12 @@
     windows_subsystem = "windows"
 )]
 
+#[macro_use]
+extern crate ureq;
+
+
+mod oneai;
+use crate::oneai::{get_names,get_dates,label::Label};
 use active_win_pos_rs::get_active_window;
 use cli_clipboard::ClipboardContext;
 use cli_clipboard::ClipboardProvider;
@@ -17,11 +23,10 @@ struct Payload {
     message: String,
     current_window: String,
     process: String,
+    names_detected: Vec<Label>,
+    dates_detected: Vec<Label>
 }
-#[tauri::command]
-fn greet(name: &str) -> String {
-    format!("Hello, {}! You've been greeted from Rust!", name)
-}
+
 
 #[tauri::command]
 fn init_process(window: Window) {
@@ -35,12 +40,16 @@ fn init_process(window: Window) {
                     message: "Tauri is awesome!".into(),
                     current_window: "Active window".into(),
                     process: "Current process".into(),
+                    names_detected:vec![],
+                    dates_detected: vec![]
                 },
             )
             .unwrap();
         std::thread::sleep(delay);
     });
 }
+
+
 
 fn clipboard_listener_service(window: Window) {
     thread::spawn(move || {
@@ -71,6 +80,8 @@ fn clipboard_listener_service(window: Window) {
                     }
                 }
                 ct += 1;
+                let detected_names = get_names(copied_string.clone());
+                let detected_dates = get_dates(copied_string.clone());
                 window
                     .emit(
                         "list-updated",
@@ -79,9 +90,12 @@ fn clipboard_listener_service(window: Window) {
                             message: copied_string.into(),
                             current_window: screen.into(),
                             process: proc.into(),
+                            names_detected: detected_names,
+                            dates_detected: detected_dates
                         },
                     )
                     .unwrap();
+
                 println!("event emitted from rust");
             }
             std::thread::sleep(delay);
@@ -141,7 +155,7 @@ pub fn main() {
             },
             _ => {}
         })
-        .invoke_handler(tauri::generate_handler![greet, init_process])
+        .invoke_handler(tauri::generate_handler![init_process])
         .setup(|app| {
             // listen to the `event-name` (emitted on any window)
 
