@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState, Button } from "react";
 import { invoke } from "@tauri-apps/api/tauri";
 import Image from "next/image";
-import tauriLogo from "../assets/tauri.svg";
+import tauriLogo from "../assets/app-icon.png";
 import { emit, listen } from "@tauri-apps/api/event";
 import {
   VStack,

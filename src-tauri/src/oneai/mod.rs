@@ -7,7 +7,8 @@ use names::get_names_from_text;
 
 pub fn get_names(text:String) -> Vec<Label>{
     if text.is_empty(){
-        ()
+        // ()
+        return vec![];
     }
     println!("task to get data from api");
     let result = get_names_from_text(text);
@@ -21,7 +22,10 @@ pub fn get_names(text:String) -> Vec<Label>{
           }
           all_labels
       },
-      Err(_)=>vec![]
+      Err(_)=> {
+        println!("Error occured could not get data");
+        return vec![];
+      }
     };
   
     data
@@ -30,7 +34,8 @@ pub fn get_names(text:String) -> Vec<Label>{
 
 pub fn get_dates(text: String)-> Vec<Label>{
     if text.is_empty(){
-        ()
+        // ()
+        return vec![];
     }
     println!("task to get data from api");
     let result = get_dates_from_text(text);
@@ -44,7 +49,10 @@ pub fn get_dates(text: String)-> Vec<Label>{
           }
           all_labels
       },
-      Err(_)=>vec![]
+      Err(_)=> {
+        println!("Error occured could not get data");
+        return vec![];
+      }
     };
   
     data

@@ -20,7 +20,9 @@ pub struct NameDetection {
 }
 
 pub fn get_names_from_text(arg:String) -> Result<NameDetection,&'static str>{
-
+    if arg.is_empty() {
+        return Err("Argument string is empty");
+    }
 	let resp = ureq::post("https://api.oneai.com/api/v0/pipeline")
         .set("api-key", ONEAI_KEY)
         .set("Content-type","application/json")

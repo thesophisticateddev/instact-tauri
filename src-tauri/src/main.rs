@@ -49,23 +49,9 @@ fn init_process(window: Window) {
     });
 }
 
-
-
-fn clipboard_listener_service(window: Window) {
-    thread::spawn(move || {
-        let mut ctx: ClipboardContext = ClipboardProvider::new().unwrap();
-
-        let delay = std::time::Duration::from_secs(1);
-        let mut old_string: String = String::new();
-        let mut ct = 0;
-        println!("Thread-1 started to listen to clipboard events");
-        loop {
-            let copied_string = ctx.get_contents().unwrap();
-
-            if old_string.ne(&copied_string) {
-                old_string = copied_string.clone();
+fn process_clipboard_data(copied_string: &String,old_string: String, ct: &mut i32 , window: &Window) -> String{
+    if old_string.ne(copied_string) {
                 //if the content has changed
-             
                 let screen: String;
                 let mut proc: String = String::new();
                 match get_active_window() {
@@ -79,14 +65,14 @@ fn clipboard_listener_service(window: Window) {
                         // println!("error occurred while getting the active window");
                     }
                 }
-                ct += 1;
+                *ct += 1;
                 let detected_names = get_names(copied_string.clone());
                 let detected_dates = get_dates(copied_string.clone());
                 window
                     .emit(
                         "list-updated",
                         Payload {
-                            count: ct.into(),
+                            count: *ct,
                             message: copied_string.into(),
                             current_window: screen.into(),
                             process: proc.into(),
@@ -98,8 +84,31 @@ fn clipboard_listener_service(window: Window) {
 
                 println!("event emitted from rust");
             }
+            return String::from(copied_string);
+}
+
+fn clipboard_listener_service(window: Window) {
+    thread::spawn(move || {
+        let mut ctx: ClipboardContext = ClipboardProvider::new().unwrap();
+
+        let delay = std::time::Duration::from_secs(1);
+        let mut old_string: String = String::new();
+        let mut ct = Box::new(0);
+        
+        println!("Thread-1 started to listen to clipboard events");
+        loop {
+            match ctx.get_contents() {
+                Ok(cpd_string) => {
+                    old_string = process_clipboard_data(&cpd_string,old_string, &mut *ct ,&window);
+                }
+                Err(_) => {
+                    println!("\nError checking clipboard content\n");
+                }
+            }
+            
             std::thread::sleep(delay);
         }
+    
     });
 }
 
