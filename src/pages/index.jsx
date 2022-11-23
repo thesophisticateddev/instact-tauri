@@ -43,7 +43,7 @@ function App() {
       };
       dispatchNotification("Copied text saved to clipboard", temp.text);
 
-      setList((prevList) => [...prevList, temp]); //simple value
+      setList((prevList) => [...prevList, temp].reverse()); //simple value
 
       console.log("list after", list);
     });
@@ -67,13 +67,12 @@ function App() {
 
   return (
     <Container alignContent="center">
-      <h1>Custom Clipboard App</h1>
       <VStack>
         <span className="logos">
-          <a href="https://tauri.app" target="_blank">
+          <a href="https://instact.ai" target="_blank">
             <Image
-              width={144}
-              height={144}
+              width={400}
+              height={120}
               src={tauriLogo}
               className="logo tauri"
               alt="Tauri logo"
@@ -87,7 +86,10 @@ function App() {
         align="stretch"
       >
         <Center>
-          <Heading>Content</Heading>
+          <p>Welcome to Instact, the app that analyzes your clipboard 
+            content in real-time. Simply copy some text from anywhere 
+            on this device. We will list that text below and annotates it 
+            with business intelligence found. Give it a try and it is free. </p>
         </Center>
         <Accordion defaultIndex={[0]} allowMultiple>
           {list.map((item) => {

@@ -80,7 +80,8 @@ const ContentAccordion = ({
           </Box>
           <Divider border="1px solid gray" />
           <Box>
-            <Heading>Dates</Heading>
+            {/*<Heading>Dates</Heading>*/}
+             <Badge variant='solid'>Date</Badge>
             <UnorderedList listStyleType="none">
               {dates.map((eachItem) => {
                 return (
