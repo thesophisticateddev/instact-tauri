@@ -1,5 +1,5 @@
 [package]
-name = "tauri-app"
+name = "Instact"
 version = "1.4.0"
 description = "A Tauri App"
 authors = ["you"]

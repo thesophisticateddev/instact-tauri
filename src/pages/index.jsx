@@ -7,7 +7,7 @@ import {
   VStack,
   StackDivider,
   Container,
-  Heading,
+  Text,
   Center,
   Accordion,
 } from "@chakra-ui/react";
@@ -31,8 +31,8 @@ function App() {
   // create a new webview window and emit an event only to that window
   useEffect(() => {
     const unlisten = listen("list-updated", (event) => {
-      console.log("obj", event.payload);
-      console.log("list before", list);
+      // console.log("obj", event.payload);
+      // console.log("list before", list);
       let temp = {
         id: event.payload.count,
         text: event.payload.message,
@@ -45,7 +45,7 @@ function App() {
 
       setList((prevList) => [...prevList, temp].reverse()); //simple value
 
-      console.log("list after", list);
+      // console.log("list after", list);
     });
 
     return () => {
@@ -85,11 +85,12 @@ function App() {
         spacing={4}
         align="stretch"
       >
-        <Center>
-          <p>Welcome to Instact, the app that analyzes your clipboard 
-            content in real-time. Simply copy some text from anywhere 
-            on this device. We will list that text below and annotates it 
-            with business intelligence found. Give it a try and it is free. </p>
+        <Center padding={"25px"}>
+          <Text fontSize="small">Welcome to Instact, the app that analyzes your clipboard
+            content in real-time. Simply copy some text from anywhere
+            on this device. We will list that text below and annotates it
+            with business intelligence found. Give it a try and it is free.Tutorial FAQ
+          </Text>
         </Center>
         <Accordion defaultIndex={[0]} allowMultiple>
           {list.map((item) => {

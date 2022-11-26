@@ -15,8 +15,8 @@ import {
   List,
   ListItem,
   ListIcon,
-  Badge,
 } from "@chakra-ui/react";
+import moment from "moment/moment";
 
 const ContentAccordion = ({
   id,
@@ -42,27 +42,27 @@ const ContentAccordion = ({
     return list.filter((x) => x.name === "PERSON").map((x) => x.value);
   };
   return (
-    <AccordionItem>
-      <h2>
-        <AccordionButton>
-          <Box flex="1" textAlign="left">
-            {getTitle(text)}
-          </Box>
-          <AccordionIcon />
-        </AccordionButton>
-      </h2>
+    <AccordionItem mt={8} mb={8}>
+
+      <AccordionButton fontSize={"small"} fontWeight={"bold"}>
+        <Box flex="1" textAlign="left">
+          {getTitle(text)}
+        </Box>
+        <AccordionIcon />
+      </AccordionButton>
+
       <AccordionPanel pb={5}>
         <Container padding={8}>
-          <Text>{text}</Text>
+          <Text fontSize={"small"}>{text}</Text>
           <Divider border="1px solid gray" />
-          <Box borderBottom="3px" borderColor="gray.500">
-            <Heading fontSize={"sm"}>Source:</Heading>
-            <Text>{source}</Text>
-            <Text>{process}</Text>
+          <Box borderBottom="2px" borderColor="gray.500">
+            <Heading fontSize={"small"}>Source:</Heading>
+            <Text fontSize={"small"}>{source}</Text>
+            <Text fontSize={"small"} fontStyle={"italic"}>{process}</Text>
           </Box>
           <Divider border="1px solid gray" />
           <Box>
-            <Heading fontSize={"sm"}>Names</Heading>
+            <Heading><span className="greenBadge">Person</span></Heading>
           </Box>
           <Box>
             <UnorderedList listStyleType="none">
@@ -80,19 +80,19 @@ const ContentAccordion = ({
           </Box>
           <Divider border="1px solid gray" />
           <Box>
-            {/*<Heading>Dates</Heading>*/}
-             <Badge variant='solid'>Date</Badge>
+            <Heading><span className="orangeBadge">Date</span></Heading>
             <UnorderedList listStyleType="none">
               {dates.map((eachItem) => {
                 return (
-                  <ListItem className="listStyle">{eachItem.value}</ListItem>
+                  <ListItem className="listStyle">{moment(eachItem.value).format("MMM DD, YYYY hh:mm A")}</ListItem>
                 );
               })}
             </UnorderedList>
           </Box>
           <Divider border="1px solid gray" />
           <Box>
-            <Heading>Locations</Heading>
+            <Heading><span className="purpleBadge">Locations</span></Heading>
+
             <UnorderedList listStyleType="none">
               {names
                 .filter(
