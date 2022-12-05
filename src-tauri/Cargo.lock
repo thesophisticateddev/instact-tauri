@@ -3,6 +3,19 @@
 version = 3
 
 [[package]]
+name = "Instact"
+version = "1.5.0"
+dependencies = [
+ "active-win-pos-rs",
+ "cli-clipboard",
+ "serde",
+ "serde_json",
+ "tauri",
+ "tauri-build",
+ "ureq",
+]
+
+[[package]]
 name = "active-win-pos-rs"
 version = "0.7.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3069,19 +3082,6 @@ dependencies = [
  "webkit2gtk",
  "webview2-com",
  "windows 0.39.0",
-]
-
-[[package]]
-name = "tauri-app"
-version = "1.3.0"
-dependencies = [
- "active-win-pos-rs",
- "cli-clipboard",
- "serde",
- "serde_json",
- "tauri",
- "tauri-build",
- "ureq",
 ]
 
 [[package]]

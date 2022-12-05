@@ -7,8 +7,8 @@
     "withGlobalTauri": false
   },
   "package": {
-    "productName": "tauri-app",
-    "version": "1.3.0"
+    "productName": "Instact",
+    "version": "1.5.0"
   },
   "tauri": {
     "systemTray": {
@@ -62,8 +62,9 @@
         "fullscreen": false,
         "height": 600,
         "resizable": true,
-        "title": "tauri-app",
-        "width": 800
+        "title": "Instact",
+        "width": 800,
+        "theme":"Light"
       }
     ]
   }

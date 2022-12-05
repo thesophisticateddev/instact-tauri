@@ -1,13 +1,13 @@
 import { useCallback, useEffect, useState, Button } from "react";
 import { invoke } from "@tauri-apps/api/tauri";
 import Image from "next/image";
-import tauriLogo from "../assets/tauri.svg";
+import tauriLogo from "../assets/app-icon.png";
 import { emit, listen } from "@tauri-apps/api/event";
 import {
   VStack,
   StackDivider,
   Container,
-  Heading,
+  Text,
   Center,
   Accordion,
 } from "@chakra-ui/react";
@@ -31,8 +31,8 @@ function App() {
   // create a new webview window and emit an event only to that window
   useEffect(() => {
     const unlisten = listen("list-updated", (event) => {
-      console.log("obj", event.payload);
-      console.log("list before", list);
+      // console.log("obj", event.payload);
+      // console.log("list before", list);
       let temp = {
         id: event.payload.count,
         text: event.payload.message,
@@ -43,7 +43,7 @@ function App() {
       };
       dispatchNotification("Copied text saved to clipboard", temp.text);
 
-      setList((prevList) => [...prevList, temp]); //simple value
+      setList((prevList) => [...prevList, temp].reverse()); //simple value
 
       console.log("list after", list);
     });
@@ -67,13 +67,12 @@ function App() {
 
   return (
     <Container alignContent="center">
-      <h1>Custom Clipboard App</h1>
       <VStack>
         <span className="logos">
-          <a href="https://tauri.app" target="_blank">
+          <a href="https://instact.ai" target="_blank">
             <Image
-              width={144}
-              height={144}
+              width={400}
+              height={120}
               src={tauriLogo}
               className="logo tauri"
               alt="Tauri logo"
@@ -86,8 +85,12 @@ function App() {
         spacing={4}
         align="stretch"
       >
-        <Center>
-          <Heading>Content</Heading>
+        <Center padding={"25px"}>
+          <Text fontSize="small">Welcome to Instact, the app that analyzes your clipboard
+            content in real-time. Simply copy some text from anywhere
+            on this device. We will list that text below and annotates it
+            with business intelligence found. Give it a try and it is free.Tutorial FAQ
+          </Text>
         </Center>
         <Accordion defaultIndex={[0]} allowMultiple>
           {list.map((item) => {
