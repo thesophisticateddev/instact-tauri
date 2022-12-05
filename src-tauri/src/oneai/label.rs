@@ -7,5 +7,6 @@ pub struct Label{
    pub skill:String,
    pub name:String,
    pub value:String,
-   pub data: HashMap<String,Option<Value>>
+   pub data: HashMap<String,Option<Value>>,
+   pub span_text: String
 }

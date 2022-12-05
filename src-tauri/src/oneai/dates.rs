@@ -9,7 +9,7 @@ const ONEAI_KEY: &str = "464f5c42-ef71-4fe2-a92b-1ca0b3e8c18b";
 #[derive(Serialize,Deserialize,Debug)]
 pub struct DatesOutput{
     pub text : String,
-    pub labels : Vec<Label>
+    pub labels : Vec<Label>,
 }
 
 #[derive(Serialize,Deserialize,Debug)]

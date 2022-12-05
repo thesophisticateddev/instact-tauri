@@ -45,7 +45,7 @@ function App() {
 
       setList((prevList) => [...prevList, temp].reverse()); //simple value
 
-      // console.log("list after", list);
+      console.log("list after", list);
     });
 
     return () => {
