@@ -101,7 +101,6 @@ button {
   }
 }
 
-
 .listStyle {
   border: 1px solid transparent;
   font-size: 1em;
@@ -120,22 +119,47 @@ button {
   text-align: center;
   border-radius: 5px;
   font-size: small;
+  /* ------------ */
+  position: relative;
+}
+/* .toolTip {
+  position: relative;
+  display: inline-block;
+} */
+.orangeBadge .toolTipText {
+  visibility: hidden;
+  position: absolute;
+  background-color: #0f0f0f;
+  color: #ffffff;
+  padding: 5px 0px;
+  border-radius: 6px;
+  top: 18px;
+  left:0px;
+}
+
+.orangeBadge:hover .toolTipText {
+  /* display: block; */
+  visibility: visible;
 }
 
 .orangeBadge {
-  background-color: #ED7D31;
+  background-color: #ed7d31;
   color: white;
   padding: 4px 8px;
   text-align: center;
   border-radius: 5px;
   font-size: small;
+  /* ------------ */
+  position: relative;
 }
 
 .purpleBadge {
-  background-color: #7030A0;
+  background-color: #7030a0;
   color: white;
   padding: 4px 8px;
   text-align: center;
   border-radius: 5px;
   font-size: small;
+  /* ------------ */
+  position: relative;
 }
