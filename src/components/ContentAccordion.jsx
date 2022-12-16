@@ -12,16 +12,9 @@ import {
   Tooltip,
 } from "@chakra-ui/react";
 import moment from "moment/moment";
+import axios from "axios";
 
-const ContentAccordion = ({
-  id,
-  text,
-  source,
-  process,
-  dates,
-  names,
-  currentTheme,
-}) => {
+const ContentAccordion = ({ id, text, source, process }) => {
   const [finalText, setFinalText] = useState(text);
 
   const getTitle = (str) => {
@@ -33,65 +26,94 @@ const ContentAccordion = ({
   };
 
   useEffect(() => {
-    const formattedNames = getFormattedNamesText(text, names);
-    const formattedLocations = getFormattedLocationsText(formattedNames, names);
-    const formattedDates = getFormattedDatesText(formattedLocations, dates);
+    formatData();
+  }, []);
 
-    setFinalText(formattedDates);
-  });
-
-  const getFormattedNamesText = (textString, nameList) => {
-    const listOfNames = nameList
-      .filter((x) => x.name === "PERSON")
-      .map((x) => x.span_text);
-    listOfNames.forEach((name) => {
-      const indexOfName = textString.indexOf(name);
-      textString =
-        textString.substring(0, indexOfName) +
-        `<span class=greenBadge><strong>PERSON</strong>:</span> ${name} ` +
-        textString.substring(indexOfName + name.length + 1, textString.length);
-    });
-    return textString;
-  };
-
-  const getFormattedLocationsText = (textString, locationList) => {
-    const listOfNames = locationList
-      .filter((x) => x.name === "GEO" || x.name === "LOCATION")
-      .map((x) => x.value);
-    const data = textString.split(" ").map((word) => {
-      let string = word;
-      listOfNames.map((name) => {
-        if (word.includes(name)) {
-          string = `<span class=purpleBadge locationToolTip><strong>LOCATION:</strong></span> ${word} `;
+  const formatData = async () => {
+    let promises = [];
+    promises.push(
+      axios.post(
+        "https://api.oneai.com/api/v0/pipeline",
+        {
+          input: text,
+          input_type: "article",
+          steps: [{ skill: "names" }, { skill: "numbers" }],
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            "api-key": "464f5c42-ef71-4fe2-a92b-1ca0b3e8c18b",
+          },
         }
-      });
+      )
+    );
 
-      return string;
-    });
+    Promise.all(promises).then((responses) => {
+      const labels = [...responses[0].data.output.map((x) => x.labels)[0]].sort(
+        (x, y) => x.span[0] > y.span[0]
+      );
+      let domElements = [];
+      let processingText = text;
 
-    return data.join(" ");
-  };
+      console.log("labels", labels);
 
-  const getFormattedDatesText = (textString, datesList) => {
-    datesList.forEach((eachItem) => {
-      const indexOfDate = textString.indexOf(eachItem.span_text);
-      textString =
-        textString.substring(0, indexOfDate) +
-        `<span class="orangeBadge">
-            <span class=toolTipText>${moment(eachItem.value).format(
-              "MMM DD, YYYY hh:mm A"
-            )}
+      for (let i = 0; i < labels.length; i++) {
+        switch (labels[i].name) {
+          case "PERSON": {
+            domElements.push(
+              <span className="greenBadge">
+                <strong>PERSON</strong>:
+              </span>
+            );
+            break;
+          }
+          case "GEO":
+          case "LOCATION": {
+            domElements.push(
+              <span className="purpleBadge" locationToolTip>
+                <strong>LOCATION:</strong>
+              </span>
+            );
+            break;
+          }
+          case "DATE":
+          case "TIME":
+          case "DATETIME": {
+            domElements.push(
+              <Tooltip
+                label={moment(labels[i].data?.date_time).format(
+                  "MMM DD, YYYY hh:mm A"
+                )}
+              >
+                <span className="orangeBadge">
+                  <strong> Date & Time </strong>
+                </span>
+              </Tooltip>
+            );
+          }
+        }
+
+        if (i == 0) {
+          domElements.push(
+            <span>
+              {processingText.substring(labels[i].span[0], labels[i].span[1])}
             </span>
-          <strong> Date & Time </strong></span> ${
-            eachItem.span_text
-          } </Tooltip>` +
-        textString.substring(
-          indexOfDate + eachItem.span_text.length + 1,
-          textString.length
-        );
+          );
+          processingText = processingText.substring(labels[i].span[1]);
+        } else {
+          const value = labels[i].span_text;
+          const startIndex = processingText.indexOf(value);
+          const endIndex = startIndex + value.length;
+          domElements.push(
+            <span>{processingText.substring(startIndex, endIndex) + " "}</span>
+          );
+          processingText = processingText.substring(endIndex + 1);
+        }
+        domElements.push(<span>{processingText}</span>);
+      }
+      console.log(domElements);
+      setFinalText(domElements);
     });
-
-    return textString;
   };
 
   return (
@@ -105,10 +127,7 @@ const ContentAccordion = ({
 
       <AccordionPanel pb={5}>
         <Container padding={8}>
-          {/* <Text fontSize={"small"}>{text}</Text> */}
-          <Text fontSize={"small"}>
-            <div dangerouslySetInnerHTML={{ __html: finalText }}></div>
-          </Text>
+          <Text fontSize={"small"}>{finalText}</Text>
           <Divider border="1px solid gray" />
           <Box borderBottom="2px" borderColor="gray.500">
             <Heading fontSize={"small"}>Capture Source & Time:</Heading>

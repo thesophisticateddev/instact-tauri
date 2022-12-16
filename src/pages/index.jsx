@@ -23,29 +23,17 @@ import ContentAccordion from "../components/ContentAccordion";
 function App() {
   const [list, setList] = useState([]);
 
-  useEffect(() => {
-    console.log("list ", list);
-  }, [list]);
-
-
   // create a new webview window and emit an event only to that window
   useEffect(() => {
     const unlisten = listen("list-updated", (event) => {
-      // console.log("obj", event.payload);
-      // console.log("list before", list);
       let temp = {
         id: event.payload.count,
         text: event.payload.message,
         source: event.payload.current_window,
         process: event.payload.process,
-        names: event.payload.names_detected,
-        dates: event.payload.dates_detected,
       };
-      dispatchNotification("Copied text saved to clipboard", temp.text);
-
+      dispatchNotification("Copied text saved to clipboard", temp);
       setList((prevList) => [...prevList, temp].reverse()); //simple value
-
-      console.log("list after", list);
     });
 
     return () => {
@@ -60,7 +48,6 @@ function App() {
       permissionGranted = permission === "granted";
     }
     if (permissionGranted) {
-      // sendNotification("Tauri is awesome!");
       sendNotification({ title, body, icon: "../../src-tauri/icons/icon.ico" });
     }
   }
@@ -86,21 +73,21 @@ function App() {
         align="stretch"
       >
         <Center padding={"25px"}>
-          <Text fontSize="small">Welcome to Instact, the app that analyzes your clipboard
-            content in real-time. Simply copy some text from anywhere
-            on this device. We will list that text below and annotates it
-            with business intelligence found. Give it a try and it is free.Tutorial FAQ
+          <Text fontSize="small">
+            Welcome to Instact, the app that analyzes your clipboard content in
+            real-time. Simply copy some text from anywhere on this device. We
+            will list that text below and annotates it with business
+            intelligence found. Give it a try and it is free.Tutorial FAQ
           </Text>
         </Center>
         <Accordion defaultIndex={[0]} allowMultiple>
           {list.map((item) => {
             return (
               <ContentAccordion
+                key={`COPIED-TEXT-${item.id}`}
                 text={item.text}
                 source={item.source}
                 process={item.process}
-                dates={item.dates}
-                names={item.names}
                 id={item.id}
               />
             );

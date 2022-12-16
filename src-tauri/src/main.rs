@@ -16,17 +16,25 @@ use std::thread;
 use tauri::SystemTray;
 use tauri::{CustomMenuItem, SystemTrayEvent, SystemTrayMenu, SystemTrayMenuItem};
 use tauri::{Manager, Window};
-// Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
+// // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
+// #[derive(Clone, serde::Serialize)]
+// struct Payload {
+//     count: i32,
+//     message: String,
+//     current_window: String,
+//     process: String,
+//     names_detected: Vec<Label>,
+//     dates_detected: Vec<Label>
+// }
+
+
 #[derive(Clone, serde::Serialize)]
 struct Payload {
     count: i32,
     message: String,
     current_window: String,
     process: String,
-    names_detected: Vec<Label>,
-    dates_detected: Vec<Label>
 }
-
 
 #[tauri::command]
 fn init_process(window: Window) {
@@ -39,9 +47,7 @@ fn init_process(window: Window) {
                     count: 0,
                     message: "Tauri is awesome!".into(),
                     current_window: "Active window".into(),
-                    process: "Current process".into(),
-                    names_detected:vec![],
-                    dates_detected: vec![]
+                    process: "Current process".into()
                 },
             )
             .unwrap();
@@ -66,8 +72,8 @@ fn process_clipboard_data(copied_string: &String,old_string: String, ct: &mut i3
                     }
                 }
                 *ct += 1;
-                let detected_names = get_names(copied_string.clone());
-                let detected_dates = get_dates(copied_string.clone());
+                // let detected_names = get_names(copied_string.clone());
+                // let detected_dates = get_dates(copied_string.clone());
                 window
                     .emit(
                         "list-updated",
@@ -76,8 +82,6 @@ fn process_clipboard_data(copied_string: &String,old_string: String, ct: &mut i3
                             message: copied_string.into(),
                             current_window: screen.into(),
                             process: proc.into(),
-                            names_detected: detected_names,
-                            dates_detected: detected_dates
                         },
                     )
                     .unwrap();
