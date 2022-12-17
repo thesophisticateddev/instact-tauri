@@ -1,4 +1,4 @@
-import { React, useState, useEffect } from "react";
+import { React, useState, useEffect, Fragment } from "react";
 import {
   AccordionItem,
   AccordionButton,
@@ -13,6 +13,11 @@ import {
 } from "@chakra-ui/react";
 import moment from "moment/moment";
 import axios from "axios";
+import {
+  isPermissionGranted,
+  requestPermission,
+  sendNotification,
+} from "@tauri-apps/api/notification";
 
 const ContentAccordion = ({ id, text, source, process }) => {
   const [finalText, setFinalText] = useState(text);
@@ -24,6 +29,72 @@ const ContentAccordion = ({ id, text, source, process }) => {
     }
     return str;
   };
+  const getFormattedNamesText = (textString, detections) => {
+    const listOfNames = detections
+      .filter((x) => x.name === "PERSON")
+      .map((x) => x.span_text);
+    listOfNames.forEach((name) => {
+      const indexOfName = textString.indexOf(name);
+      textString =
+        textString.substring(0, indexOfName) +
+        `<span class=greenBadge><strong>PERSON</strong>:</span> ${name} ` +
+        textString.substring(indexOfName + name.length + 1, textString.length);
+    });
+    return textString;
+  };
+  const getFormattedLocationsText = (textString, locationList) => {
+    const listOfNames = locationList
+      .filter((x) => x.name === "GEO" || x.name === "LOCATION")
+      .map((x) => x.value);
+    const data = textString.split(" ").map((word) => {
+      let string = word;
+      listOfNames.map((name) => {
+        if (word.includes(name)) {
+          string = `<span class=purpleBadge locationToolTip><strong>LOCATION:</strong></span> ${word} `;
+        }
+      });
+
+      return string;
+    });
+
+    return data.join(" ");
+  };
+  const getFormattedDatesText = (textString, labels) => {
+    const dateList = labels.filter(
+      (x) => x.name === "DATE" || x.name === "TIME" || x.name === "DATETIME"
+    );
+
+    dateList.forEach((eachItem) => {
+      const indexOfDate = textString.indexOf(eachItem.span_text);
+      textString =
+        textString.substring(0, indexOfDate) +
+        `<span class="orangeBadge">
+            <span class=toolTipText>${moment(eachItem.value).format(
+              "MMM DD, YYYY hh:mm A"
+            )}
+            </span>
+          <strong> Date & Time </strong></span> ${
+            eachItem.span_text
+          } </Tooltip>` +
+        textString.substring(
+          indexOfDate + eachItem.span_text.length + 1,
+          textString.length
+        );
+    });
+
+    return textString;
+  };
+
+  async function dispatchNotification(title, body) {
+    let permissionGranted = await isPermissionGranted();
+    if (!permissionGranted) {
+      const permission = await requestPermission();
+      permissionGranted = permission === "granted";
+    }
+    if (permissionGranted) {
+      sendNotification({ title, body, icon: "../../src-tauri/icons/icon.ico" });
+    }
+  }
 
   useEffect(() => {
     formatData();
@@ -48,72 +119,93 @@ const ContentAccordion = ({ id, text, source, process }) => {
       )
     );
 
-    Promise.all(promises).then((responses) => {
-      const labels = [...responses[0].data.output.map((x) => x.labels)[0]].sort(
-        (x, y) => x.span[0] > y.span[0]
-      );
-      let domElements = [];
-      let processingText = text;
+    Promise.all(promises)
+      .then((responses) => {
+        const labels = [
+          ...responses[0].data.output.map((x) => x.labels)[0],
+        ].sort((x, y) => x.span[0] > y.span[0]);
+        // let domElements = [];
+        // let processingText = text;
 
-      console.log("labels", labels);
+        console.log("labels", labels);
 
-      for (let i = 0; i < labels.length; i++) {
-        switch (labels[i].name) {
-          case "PERSON": {
-            domElements.push(
-              <span className="greenBadge">
-                <strong>PERSON</strong>:
-              </span>
-            );
-            break;
-          }
-          case "GEO":
-          case "LOCATION": {
-            domElements.push(
-              <span className="purpleBadge" locationToolTip>
-                <strong>LOCATION:</strong>
-              </span>
-            );
-            break;
-          }
-          case "DATE":
-          case "TIME":
-          case "DATETIME": {
-            domElements.push(
-              <Tooltip
-                label={moment(labels[i].data?.date_time).format(
-                  "MMM DD, YYYY hh:mm A"
-                )}
-              >
-                <span className="orangeBadge">
-                  <strong> Date & Time </strong>
-                </span>
-              </Tooltip>
-            );
-          }
-        }
+        const formattedNames = getFormattedNamesText(text, labels);
+        const formattedLocations = getFormattedLocationsText(
+          formattedNames,
+          labels
+        );
+        const formattedDates = getFormattedDatesText(
+          formattedLocations,
+          labels
+        );
 
-        if (i == 0) {
-          domElements.push(
-            <span>
-              {processingText.substring(labels[i].span[0], labels[i].span[1])}
-            </span>
-          );
-          processingText = processingText.substring(labels[i].span[1]);
-        } else {
-          const value = labels[i].span_text;
-          const startIndex = processingText.indexOf(value);
-          const endIndex = startIndex + value.length;
-          domElements.push(
-            <span>{processingText.substring(startIndex, endIndex) + " "}</span>
-          );
-          processingText = processingText.substring(endIndex + 1);
-        }
-        domElements.push(<span>{processingText}</span>);
-      }
-      console.log(domElements);
-      setFinalText(domElements);
-    });
+        // Just iterate through all matches
+
+        // for (let i = 0; i < labels.length; i++) {
+        //   switch (labels[i].name) {
+        //     case "PERSON": {
+        //       domElements.push(
+        //         <span className="greenBadge">
+        //           <strong>PERSON</strong>:
+        //         </span>
+        //       );
+        //       break;
+        //     }
+        //     case "GEO":
+        //     case "LOCATION": {
+        //       domElements.push(
+        //         <span className="purpleBadge" locationToolTip>
+        //           <strong>LOCATION:</strong>
+        //         </span>
+        //       );
+        //       break;
+        //     }
+        //     case "DATE":
+        //     case "TIME":
+        //     case "DATETIME": {
+        //       domElements.push(
+        //         <Tooltip
+        //           label={moment(labels[i].data?.date_time).format(
+        //             "MMM DD, YYYY hh:mm A"
+        //           )}
+        //         >
+        //           <span className="orangeBadge">
+        //             <strong> Date & Time </strong>
+        //           </span>
+        //         </Tooltip>
+        //       );
+        //     }
+        //   }
+
+        //   if (i == 0) {
+        //     domElements.push(<span>{processingText.substring(0,labels[i].span[0])}</span>)
+        //     domElements.push(
+        //       <span>
+        //         {processingText.substring(labels[i].span[0], labels[i].span[1])}
+        //       </span>
+        //     );
+        //     processingText = processingText.substring(labels[i].span[1]);
+        //   } else {
+        //     const value = labels[i].span_text;
+        //     const startIndex = processingText.indexOf(value);
+        //     const endIndex = startIndex + value.length;
+        //     domElements.push(
+        //       <span>{processingText.substring(startIndex, endIndex) + " "}</span>
+        //     );
+        //     processingText = processingText.substring(endIndex + 1);
+        //   }
+        //   domElements.push(<span>{processingText}</span>);
+        // }
+        // console.log(domElements);
+
+        setFinalText(formattedDates);
+      })
+      .catch(async (err) => {
+        await dispatchNotification(
+          "API call failed",
+          "Could not detect anything, please check network"
+        );
+      });
   };
 
   return (
@@ -127,7 +219,9 @@ const ContentAccordion = ({ id, text, source, process }) => {
 
       <AccordionPanel pb={5}>
         <Container padding={8}>
-          <Text fontSize={"small"}>{finalText}</Text>
+          <Text fontSize={"small"}>
+            <div dangerouslySetInnerHTML={{ __html: finalText }}></div>
+          </Text>
           <Divider border="1px solid gray" />
           <Box borderBottom="2px" borderColor="gray.500">
             <Heading fontSize={"small"}>Capture Source & Time:</Heading>
