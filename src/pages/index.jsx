@@ -41,6 +41,11 @@ function App() {
     };
   }, []);
 
+  const getContent = () =>{
+    const data = emit("findAll");
+    console.log('get Content data here ===>', data);
+  }
+
   async function dispatchNotification(title, body) {
     let permissionGranted = await isPermissionGranted();
     if (!permissionGranted) {
@@ -66,6 +71,9 @@ function App() {
             />
           </a>
         </span>
+      </VStack>
+      <VStack>
+        <button onClick={getContent}>test</button>
       </VStack>
       <VStack
         divider={<StackDivider borderColor="gray" />}
