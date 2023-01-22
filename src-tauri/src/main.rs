@@ -4,18 +4,18 @@
 )]
 
 
-use crate::db::clipboard::ClipboardRepository;
 mod db;
+use crate::db::clipboard::ClipboardRepository;
 use crate::db::{clipboard::Clipboard};
 use active_win_pos_rs::get_active_window;
 use cli_clipboard::ClipboardContext;
 use cli_clipboard::ClipboardProvider;
 use std::thread;
-use tauri::{SystemTray, window};
+use tauri::{SystemTray};
 use tauri::{CustomMenuItem, SystemTrayEvent, SystemTrayMenu, SystemTrayMenuItem};
 use tauri::{Manager, Window};
 
-static database_url: &'static str = "testdb";
+static database_url: &'static str = "/home/salman/testdb";
 
 #[derive(Clone, serde::Serialize)]
 struct Payload {
@@ -45,18 +45,21 @@ fn init_process(window: Window) {
 }
 
 #[tauri::command]
-fn get_all_content(window: Window){
+fn get_all_content(window: Window) -> Vec<Clipboard>{
+    println!("getting data......");
     let conn = ClipboardRepository{
         database: database_url.to_string()
     };
     let content = conn.find_all();
     match content{
         Ok(data) => {
-            window.emit("findAll",data).unwrap();
             println!("all data sent!");
+            data
         }
-        Err(_) =>{
+        Err(err) =>{
             println!("Error fetching data from repository");
+            println!("{}",err);
+            vec![]
         }
     }
 }
@@ -69,7 +72,7 @@ fn delete_all_content(window: Window){
     let result = conn.delete_all();
     match result {
         Ok(res) =>{
-            
+            window.emit("deleteAll", "content in db has been cleared").unwrap();
         }
         Err(_) => {
             println!("Error deleting from repository");

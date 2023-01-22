@@ -1,8 +1,10 @@
-import {  useEffect, useState } from "react";
+import { useEffect, useState } from "react";
+import { listen } from "@tauri-apps/api/event";
+import dynamic from "next/dynamic";
+import {invoke } from "@tauri-apps/api/tauri";
 
 import Image from "next/image";
 import tauriLogo from "../assets/app-icon.png";
-import { emit, listen } from "@tauri-apps/api/event";
 import {
   VStack,
   StackDivider,
@@ -41,10 +43,17 @@ function App() {
     };
   }, []);
 
-  const getContent = () =>{
-    const data = emit("findAll");
-    console.log('get Content data here ===>', data);
-  }
+  const getContent = () => {
+    const isClient = typeof window !== "undefined";
+    return (
+      isClient &&
+      invoke("get_all_content")
+        .then((data) => {
+          console.log("get content data", data);
+        })
+        .catch((err) => console.log(err))
+    );
+  };
 
   async function dispatchNotification(title, body) {
     let permissionGranted = await isPermissionGranted();
