@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { listen } from "@tauri-apps/api/event";
-import dynamic from "next/dynamic";
 import {invoke } from "@tauri-apps/api/tauri";
 
 import Image from "next/image";

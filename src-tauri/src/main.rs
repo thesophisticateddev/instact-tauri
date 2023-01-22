@@ -14,8 +14,15 @@ use std::thread;
 use tauri::{SystemTray};
 use tauri::{CustomMenuItem, SystemTrayEvent, SystemTrayMenu, SystemTrayMenuItem};
 use tauri::{Manager, Window};
+use std::env;
 
-static database_url: &'static str = "/home/salman/testdb";
+// static database_url: &'static str = "/home/salman/testdb";
+#[cfg(target_os = "macos")]
+static database_url: &str = "../instact";
+#[cfg(target_os = "linux")]
+static database_url: &str = "../instact";
+#[cfg(target_os = "windows")]
+static database_url: &str = "../instact";
 
 #[derive(Clone, serde::Serialize)]
 struct Payload {
@@ -146,6 +153,7 @@ fn clipboard_listener_service(window: Window) {
 }
 
 pub fn main() {
+    println!("Current OS: {}",env::consts::OS);
     // here `"quit".to_string()` defines the menu item id, and the second parameter is the menu item label.
 
     let quit = CustomMenuItem::new("quit".to_string(), "Quit");

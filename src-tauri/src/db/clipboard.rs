@@ -17,9 +17,9 @@ pub struct ClipboardRepository{
 impl ClipboardRepository{
 
     pub fn init(&self) -> Result<()>{
-         let conn = Connection::open(&self.database)?;
+        let conn = Connection::open(&self.database)?;
         println!("Database connected successfully");
-        conn.execute(
+        let res = conn.execute(
             "CREATE TABLE if not exists clipboard (
                 id    INTEGER PRIMARY KEY,
                 message  TEXT,
@@ -28,6 +28,7 @@ impl ClipboardRepository{
             )",
             (), // empty list of parameters.
         )?;
+        println!("Init status {}",res);
 
         Ok(())
     }
