@@ -50,29 +50,49 @@ fn init_process(window: Window) {
         std::thread::sleep(delay);
     });
 }
+#[derive(Clone, serde::Serialize, serde::Deserialize)]
+struct PaginationPayload{
+    page: i32,
+    limit: i32,
+}
+
+#[derive(Clone, serde::Serialize, serde::Deserialize)]
+struct PaginationResult{
+    count: i32,
+    data: Vec<Clipboard>
+}
 
 #[tauri::command]
-fn get_all_content(window: Window) -> Vec<Clipboard>{
+fn get_all_content(page_data: PaginationPayload) -> PaginationResult{
     println!("getting data......");
     let conn = ClipboardRepository{
         database: database_url.to_string()
     };
-    let content = conn.find_all();
+    
+    let total_data = conn.count_all().unwrap();
+    let content = conn.find_all_pagination(page_data.page,page_data.limit);
     match content{
-        Ok(data) => {
+        Ok(content_data) => {
             println!("all data sent!");
-            data
+            PaginationResult{
+                count: total_data,
+                data: content_data,
+            }
+            
         }
         Err(err) =>{
             println!("Error fetching data from repository");
             println!("{}",err);
-            vec![]
+            PaginationResult {
+                count: 0,
+                data: vec![],
+            }
         }
     }
 }
 
 #[tauri::command]
-fn delete_all_content(window: Window){
+fn delete_all_content(window: Window) -> String{
     let conn = ClipboardRepository{
         database: database_url.to_string()
     };
@@ -80,9 +100,11 @@ fn delete_all_content(window: Window){
     match result {
         Ok(res) =>{
             window.emit("deleteAll", "content in db has been cleared").unwrap();
+            format!("data has been cleared")
         }
         Err(_) => {
             println!("Error deleting from repository");
+            format!("Error deleting from repository")
         }
     }
 }
@@ -215,4 +237,5 @@ pub fn main() {
         })
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
+
 }

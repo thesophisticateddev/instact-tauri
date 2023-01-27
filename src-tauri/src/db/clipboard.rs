@@ -32,7 +32,16 @@ impl ClipboardRepository{
 
         Ok(())
     }
-
+    pub fn count_all(&self) -> Result<i32>{
+        let conn = Connection::open(&self.database)?;
+        let mut stmt = conn.prepare("SELECT COUNT(*) FROM clipboard")?;
+        let mut rows = stmt.query([])?;
+        let mut count:i32 = 0;
+        while let Ok(Some(result_row)) = rows.next(){
+            count = result_row.get(0)?;
+        }
+        Ok(count)
+    }
     pub fn add(&self, data: &Clipboard) -> Result<()>{
         let conn = Connection::open(&self.database)?;
         
@@ -47,6 +56,31 @@ impl ClipboardRepository{
         let mut rows = stmt.query([])?;
 
         let mut data = Vec::new();
+
+        while let Ok(Some(result_row)) = rows.next() {
+            let row = result_row;
+            data.push(Clipboard {
+                id: row.get(0)?,
+                message: row.get(1)?,
+                current_window: row.get(2)?,
+                process: row.get(3)?
+            });
+        }
+       Ok(data)
+    }
+
+
+    pub fn find_all_pagination(&self, page:i32, limit:i32) -> Result<Vec<Clipboard>>{
+        let conn = Connection::open(&self.database)?;
+        let mut data = Vec::new();
+        if page < 0 || limit <= 0 {
+            return Ok(data)
+        }
+        let offset = page * limit;
+        let mut stmt = conn.prepare("SELECT * FROM clipboard LIMIT ?1 , ?2")?;
+        let mut rows = stmt.query(&[&offset,&limit])?;
+
+       
 
         while let Ok(Some(result_row)) = rows.next() {
             let row = result_row;

@@ -10,6 +10,7 @@ import {
   Container,
   Heading,
   Tooltip,
+  ChakraProvider,
 } from "@chakra-ui/react";
 import moment from "moment/moment";
 import axios from "axios";
@@ -209,31 +210,40 @@ const ContentAccordion = ({ id, text, source, process }) => {
   };
 
   return (
-    <AccordionItem mt={8} mb={8}>
-      <AccordionButton fontSize={"small"} fontWeight={"bold"}>
-        <Box flex="1" textAlign="left">
-          {getTitle(text)}
-        </Box>
-        <AccordionIcon />
-      </AccordionButton>
-
-      <AccordionPanel pb={5}>
-        <Container padding={8}>
-          <Text fontSize={"small"}>
-            <div dangerouslySetInnerHTML={{ __html: finalText }}></div>
-          </Text>
-          <Divider border="1px solid gray" />
-          <Box borderBottom="2px" borderColor="gray.500">
-            <Heading fontSize={"small"}>Capture Source & Time:</Heading>
-            <Text fontSize={"small"}>{`${source},  ${new Date()}`}</Text>
-            <Text fontSize={"small"} fontStyle={"italic"}>
-              {process}
-            </Text>
+    <ChakraProvider>
+      <AccordionItem mt={8} mb={8}>
+        <AccordionButton fontSize={"small"} fontWeight={"bold"}>
+          <Box flex="1" textAlign="left">
+            {getTitle(text)}
           </Box>
-          <Divider border="1px solid gray" />
-        </Container>
-      </AccordionPanel>
-    </AccordionItem>
+          <AccordionIcon />
+        </AccordionButton>
+
+        <AccordionPanel pb={5}>
+          <Container
+            padding={8}
+            boxShadow={"rgba(149, 157, 165, 0.2) 0px 8px 24px"}
+          >
+            <Text fontSize={"small"} pb="5px">
+              <div dangerouslySetInnerHTML={{ __html: finalText }}></div>
+            </Text>
+            <Divider border="1px solid" borderColor="black" />
+            <Box borderBottom="2px" borderColor="gray.500" pt="5px">
+              <Heading fontSize={"small"} p="5px">
+                Capture Source & Time:
+              </Heading>
+              <Text
+                p="5px"
+                fontSize={"small"}
+              >{`${source},  ${new Date()}`}</Text>
+              <Text p="5px" fontSize={"small"} fontStyle={"italic"}>
+                {process}
+              </Text>
+            </Box>
+          </Container>
+        </AccordionPanel>
+      </AccordionItem>
+    </ChakraProvider>
   );
 };
 
