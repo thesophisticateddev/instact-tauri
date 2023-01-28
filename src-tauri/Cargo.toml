@@ -20,7 +20,7 @@ tauri = { version = "1.1", features = ["api-all", "system-tray"] }
 cli-clipboard = "0.3.0"
 ureq = { version = "2.2.0", features = ["json", "charset"] }
 active-win-pos-rs = "0.7"
-rusqlite = "0.28.0"
+rusqlite = { version ="0.28.0", features = ["bundled"] }
 
 
 [features]
