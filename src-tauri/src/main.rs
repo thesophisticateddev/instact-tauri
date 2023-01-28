@@ -16,13 +16,13 @@ use tauri::{CustomMenuItem, SystemTrayEvent, SystemTrayMenu, SystemTrayMenuItem}
 use tauri::{Manager, Window};
 use std::env;
 
-// static database_url: &'static str = "/home/salman/testdb";
+// static DATABASE_URL: &'static str = "/home/salman/testdb";
 #[cfg(target_os = "macos")]
-static database_url: &str = "../instact";
+static DATABASE_URL: &str = "./instact.db";
 #[cfg(target_os = "linux")]
-static database_url: &str = "../instact";
+static DATABASE_URL: &str = "./instact.db";
 #[cfg(target_os = "windows")]
-static database_url: &str = "../instact";
+static DATABASE_URL: &str = "./instact.db";
 
 #[derive(Clone, serde::Serialize)]
 struct Payload {
@@ -66,7 +66,7 @@ struct PaginationResult{
 fn get_all_content(page_data: PaginationPayload) -> PaginationResult{
     println!("getting data......");
     let conn = ClipboardRepository{
-        database: database_url.to_string()
+        path: DATABASE_URL.to_string()
     };
     
     let total_data = conn.count_all().unwrap();
@@ -94,7 +94,7 @@ fn get_all_content(page_data: PaginationPayload) -> PaginationResult{
 #[tauri::command]
 fn delete_all_content(window: Window) -> String{
     let conn = ClipboardRepository{
-        database: database_url.to_string()
+        path: DATABASE_URL.to_string()
     };
     let result = conn.delete_all();
     match result {
@@ -146,7 +146,7 @@ fn process_clipboard_data(repo: &ClipboardRepository,copied_string: &String,old_
 
 fn clipboard_listener_service(window: Window) {
     let conn = ClipboardRepository{
-        database: database_url.to_string()
+        path: DATABASE_URL.to_string()
     };
     conn.init();
     thread::spawn(move || {
