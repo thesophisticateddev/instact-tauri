@@ -128,7 +128,7 @@ fn process_clipboard_data(repo: &ClipboardRepository,copied_string: &String,old_
                 *ct += 1;
                 // let detected_names = get_names(copied_string.clone());
                 // let detected_dates = get_dates(copied_string.clone());
-                let data = Clipboard { id: 0, message: copied_string.into(), current_window: screen.into(), process: proc.into() };
+                let data = Clipboard { id: ct.clone(), message: copied_string.into(), current_window: screen.into(), process: proc.into() };
                 println!("event emitted from rust");
                 repo.add(&data);
                 println!("saved to db");

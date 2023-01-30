@@ -225,7 +225,7 @@ const ContentAccordion = ({ id, text, source, process }) => {
             boxShadow={"rgba(149, 157, 165, 0.2) 0px 8px 24px"}
           >
             <Text fontSize={"small"} pb="5px">
-              <div dangerouslySetInnerHTML={{ __html: finalText }}></div>
+              <span dangerouslySetInnerHTML={{ __html: finalText }}></span>
             </Text>
             <Divider border="1px solid" borderColor="black" />
             <Box borderBottom="2px" borderColor="gray.500" pt="5px">

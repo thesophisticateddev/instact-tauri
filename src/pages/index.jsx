@@ -49,8 +49,10 @@ function App() {
   // create a new webview window and emit an event only to that window
   useEffect(() => {
     const unlisten = listen("list-updated", (event) => {
+      console.log("event payload:", event.payload);
+      console.log("list in unlisten:", list);
       let temp = {
-        id: event.payload.count,
+        id: event.payload.id,
         text: event.payload.message,
         source: event.payload.current_window,
         process: event.payload.process,
@@ -78,6 +80,7 @@ function App() {
         pageData: { page: currentPage.current, limit: 5 },
       })
         .then((res) => {
+          console.log(res);
           setLoading(false);
           setData([...data, ...res.data]);
           setTotalPage(res.count);
@@ -153,10 +156,11 @@ function App() {
             </Text>
           </Center>
           <Accordion defaultIndex={[0]} allowMultiple>
-            {list?.map((item) => {
+            {list?.map((item, index) => {
+              console.log("List", list);
               return (
                 <ContentAccordion
-                  key={`COPIED-TEXT-${item.id}`}
+                  key={`COPIED-TEXT-${index}`}
                   text={item.text}
                   source={item.source}
                   process={item.process}
@@ -215,7 +219,7 @@ function App() {
           ))}
         </Box>
         {currentPage.current < totalPage / 5 ||
-          data.length > 0 ||
+          // data.length > 0 ||
           (data.length < 5 && (
             <Box pt="10px" pb="10px" pl="43%">
               <Button
