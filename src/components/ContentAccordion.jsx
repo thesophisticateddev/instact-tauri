@@ -99,7 +99,7 @@ const ContentAccordion = ({ id, text, source, process }) => {
 
   useEffect(() => {
     formatData();
-  }, []);
+  }, [text]);
 
   const formatData = async () => {
     let promises = [];
