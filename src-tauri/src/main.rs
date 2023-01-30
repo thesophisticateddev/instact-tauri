@@ -22,7 +22,7 @@ static DATABASE_URL: &str = "./instact.db";
 #[cfg(target_os = "linux")]
 static DATABASE_URL: &str = "./instact.db";
 #[cfg(target_os = "windows")]
-static DATABASE_URL: &str = "./instact.db";
+static DATABASE_URL: &str = "C:/Users/%username%/instact.db";
 
 #[derive(Clone, serde::Serialize)]
 struct Payload {

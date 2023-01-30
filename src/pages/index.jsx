@@ -133,9 +133,6 @@ function App() {
           spacing={4}
           align="stretch"
         >
-          <Center>
-            <Button onClick={testNewWindow}>Click me</Button>
-          </Center>
           <Center pt={"25px"}>
             <Text fontSize="small">
               Welcome to Instact, the app that analyzes your clipboard content
