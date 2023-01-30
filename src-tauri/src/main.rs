@@ -22,7 +22,7 @@ static DATABASE_URL: &str = "./instact.db";
 #[cfg(target_os = "linux")]
 static DATABASE_URL: &str = "./instact.db";
 #[cfg(target_os = "windows")]
-static DATABASE_URL: &str = "./instact.db";
+static DATABASE_URL: &str = "C:/Users/%username%/instact.db";
 
 #[derive(Clone, serde::Serialize)]
 struct Payload {
@@ -128,7 +128,7 @@ fn process_clipboard_data(repo: &ClipboardRepository,copied_string: &String,old_
                 *ct += 1;
                 // let detected_names = get_names(copied_string.clone());
                 // let detected_dates = get_dates(copied_string.clone());
-                let data = Clipboard { id: 0, message: copied_string.into(), current_window: screen.into(), process: proc.into() };
+                let data = Clipboard { id: ct.clone(), message: copied_string.into(), current_window: screen.into(), process: proc.into() };
                 println!("event emitted from rust");
                 repo.add(&data);
                 println!("saved to db");
@@ -172,6 +172,24 @@ fn clipboard_listener_service(window: Window) {
         }
     
     });
+}
+
+#[tauri::command]
+fn create_history_window(handle: tauri::AppHandle){
+    let docs_window = tauri::WindowBuilder::new(
+        &handle,
+        "test", /* the unique window label */
+        tauri::WindowUrl::App("/history".parse().unwrap())
+      ).build();
+    match docs_window {
+        Ok(success) => {
+            println!("Window created ");
+        }
+        Err(err) => {
+            println!("{}",err);
+        }
+        
+    }
 }
 
 pub fn main() {
@@ -227,7 +245,7 @@ pub fn main() {
             },
             _ => {}
         })
-        .invoke_handler(tauri::generate_handler![init_process,get_all_content,delete_all_content])
+        .invoke_handler(tauri::generate_handler![create_history_window,get_all_content,delete_all_content])
         .setup(|app| {
             // listen to the `event-name` (emitted on any window)
 

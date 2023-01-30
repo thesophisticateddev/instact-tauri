@@ -1,6 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import { listen } from "@tauri-apps/api/event";
 import { invoke } from "@tauri-apps/api/tauri";
+import {
+  isPermissionGranted,
+  requestPermission,
+  sendNotification,
+} from "@tauri-apps/api/notification";
 
 import Image from "next/image";
 import tauriLogo from "../assets/app-icon.png";
@@ -11,32 +16,16 @@ import {
   Text,
   Center,
   Accordion,
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalFooter,
-  ModalBody,
-  useDisclosure,
-  ModalCloseButton,
   Button,
   ChakraProvider,
   Divider,
   useToast,
-  Flex,
-  Stack,
   Box,
-  HStack,
 } from "@chakra-ui/react";
 
-import {
-  isPermissionGranted,
-  requestPermission,
-  sendNotification,
-} from "@tauri-apps/api/notification";
+
 
 import ContentAccordion from "../components/ContentAccordion";
-import InfiniteScroll from "react-infinite-scroll-component";
 
 function App() {
   const [list, setList] = useState([]);
@@ -50,7 +39,7 @@ function App() {
   useEffect(() => {
     const unlisten = listen("list-updated", (event) => {
       let temp = {
-        id: event.payload.count,
+        id: event.payload.id,
         text: event.payload.message,
         source: event.payload.current_window,
         process: event.payload.process,
@@ -93,9 +82,7 @@ function App() {
       invoke("delete_all_content")
         .then((res) => {
           setData([]);
-          setMore(true);
           currentPage.current = 0;
-          // console.log("currentPage", currentPage.current);
           toast({
             title: "Successful!",
             description: "Notification deleted.",
@@ -113,18 +100,20 @@ function App() {
       permissionGranted = permission === "granted";
     }
     if (permissionGranted) {
+      sendNotification(title);
       sendNotification({ title, body, icon: "../../src-tauri/icons/icon.ico" });
     }
   }
 
+  const testNewWindow = () => {
+    invoke("create_history_window")
+      .then((res) => console.log("Window started"))
+      .catch((err) => console.error(err));
+  };
+
   return (
     <ChakraProvider>
-      <Container
-        alignContent="center"
-        /* height="100vh" */ w="100%"
-        h="100%"
-        bg="white"
-      >
+      <Container alignContent="center" w="100%" h="100%" bg="white">
         <VStack>
           <span className="logos">
             <a href="https://instact.ai" target="_blank">
@@ -170,7 +159,7 @@ function App() {
         <Box pt="10px" pb="10px">
           <Button
             size="sm"
-            colorScheme="red"
+            colorScheme="blue"
             mr={3}
             onClick={() => {
               getContent();
@@ -194,17 +183,16 @@ function App() {
             </Button>
           </Box>
         )}
-        <Box>
-          {data.map((item) => (
+        {data.map((item) => (
+          <Box key={item.id}>
             <>
-              <Text key={item.id}>
+              <Text>
                 <strong>ID: </strong>
                 {item.id}
               </Text>
               <Text>
                 <strong>Message: </strong>
                 {item.message}
-                {loading ? "Loading..." : "Load More"}
               </Text>
               <Text>
                 <strong>Process: </strong>
@@ -212,28 +200,27 @@ function App() {
               </Text>
               <Divider border="1px solid" borderColor="black" />
             </>
-          ))}
-        </Box>
-        {currentPage.current < totalPage / 5 ||
-          data.length > 0 ||
-          (data.length < 5 && (
-            <Box pt="10px" pb="10px" pl="43%">
-              <Button
-                isLoading={loading}
-                loadingText="Loading"
-                size="sm"
-                colorScheme="blue"
-                mr={3}
-                onClick={() => {
-                  getContent();
+          </Box>
+        ))}
+        {currentPage.current < totalPage / 5 && data.length > 0 && (
+          <Box pt="10px" pb="10px" pl="43%">
+            <Button
+              isLoading={loading}
+              loadingText="Loading"
+              size="sm"
+              colorScheme="blue"
+              mr={3}
+              onClick={() => {
+                getContent();
 
-                  currentPage.current += 1;
-                }}
-              >
-                Load More
-              </Button>
-            </Box>
-          ))}
+                currentPage.current += 1;
+              }}
+            >
+              {/* Load More */}
+              {loading ? "Loading..." : "Load More"}
+            </Button>
+          </Box>
+        )}
       </Container>
     </ChakraProvider>
   );
