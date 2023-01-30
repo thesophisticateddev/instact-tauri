@@ -1,6 +1,7 @@
 
 use rusqlite::{Connection, Result};
 use serde::{Deserialize, Serialize};
+use std::fs;
 #[derive(Debug,Clone,Serialize,Deserialize)]
 pub struct Clipboard {
    pub id: i32,
@@ -14,8 +15,7 @@ pub struct ClipboardRepository{
 
 }
 
-impl ClipboardRepository{
-  
+impl ClipboardRepository{ 
     pub fn init(&self) -> Result<()>{
         let conn = Connection::open(&self.path)?;
         println!("Database connected successfully");

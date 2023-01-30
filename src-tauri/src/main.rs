@@ -22,7 +22,17 @@ static DATABASE_URL: &str = "./instact.db";
 #[cfg(target_os = "linux")]
 static DATABASE_URL: &str = "./instact.db";
 #[cfg(target_os = "windows")]
-static DATABASE_URL: &str = "C:/Users/%username%/instact.db";
+static DATABASE_URL: &str = "../instact.db";
+
+fn get_db_url() -> String{
+    if(env::consts::OS.eq("windows")){
+        let url = format!("C:/Users/{}/.instact/clipboard.db",whoami::username());
+        url
+    }else{
+        let url = DATABASE_URL.to_string();
+        url
+    }
+}
 
 #[derive(Clone, serde::Serialize)]
 struct Payload {
@@ -32,24 +42,7 @@ struct Payload {
     process: String,
 }
 
-#[tauri::command]
-fn init_process(window: Window) {
-    let delay = std::time::Duration::from_secs(10);
-    std::thread::spawn(move || loop {
-        window
-            .emit(
-                "test",
-                Payload {
-                    count: 0,
-                    message: "Tauri is awesome!".into(),
-                    current_window: "Active window".into(),
-                    process: "Current process".into()
-                },
-            )
-            .unwrap();
-        std::thread::sleep(delay);
-    });
-}
+
 #[derive(Clone, serde::Serialize, serde::Deserialize)]
 struct PaginationPayload{
     page: i32,
@@ -66,7 +59,7 @@ struct PaginationResult{
 fn get_all_content(page_data: PaginationPayload) -> PaginationResult{
     println!("getting data......");
     let conn = ClipboardRepository{
-        path: DATABASE_URL.to_string()
+        path: get_db_url()
     };
     
     let total_data = conn.count_all().unwrap();
@@ -94,7 +87,7 @@ fn get_all_content(page_data: PaginationPayload) -> PaginationResult{
 #[tauri::command]
 fn delete_all_content(window: Window) -> String{
     let conn = ClipboardRepository{
-        path: DATABASE_URL.to_string()
+        path: get_db_url()
     };
     let result = conn.delete_all();
     match result {
@@ -146,7 +139,7 @@ fn process_clipboard_data(repo: &ClipboardRepository,copied_string: &String,old_
 
 fn clipboard_listener_service(window: Window) {
     let conn = ClipboardRepository{
-        path: DATABASE_URL.to_string()
+        path: get_db_url()
     };
     conn.init();
     thread::spawn(move || {
@@ -192,8 +185,23 @@ fn create_history_window(handle: tauri::AppHandle){
     }
 }
 
-pub fn main() {
+fn create_windows_directory(){
     println!("Current OS: {}",env::consts::OS);
+    if(env::consts::OS.eq("windows")){
+        let path = format!("C:/Users/{}/.instact",whoami::username());
+        println!("path {}",path);
+        match std::fs::create_dir(&path){
+            Ok(status) =>{
+                println!("directory created successfully");
+            }
+            Err(_) =>{
+                println!("could not create path")
+            }
+        }
+    }
+}
+pub fn main() {
+    create_windows_directory();
     // here `"quit".to_string()` defines the menu item id, and the second parameter is the menu item label.
 
     let quit = CustomMenuItem::new("quit".to_string(), "Quit");
