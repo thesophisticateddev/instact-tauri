@@ -174,6 +174,24 @@ fn clipboard_listener_service(window: Window) {
     });
 }
 
+#[tauri::command]
+fn create_history_window(handle: tauri::AppHandle){
+    let docs_window = tauri::WindowBuilder::new(
+        &handle,
+        "test", /* the unique window label */
+        tauri::WindowUrl::App("/history".parse().unwrap())
+      ).build();
+    match docs_window {
+        Ok(success) => {
+            println!("Window created ");
+        }
+        Err(err) => {
+            println!("{}",err);
+        }
+        
+    }
+}
+
 pub fn main() {
     println!("Current OS: {}",env::consts::OS);
     // here `"quit".to_string()` defines the menu item id, and the second parameter is the menu item label.
@@ -227,7 +245,7 @@ pub fn main() {
             },
             _ => {}
         })
-        .invoke_handler(tauri::generate_handler![init_process,get_all_content,delete_all_content])
+        .invoke_handler(tauri::generate_handler![create_history_window,get_all_content,delete_all_content])
         .setup(|app| {
             // listen to the `event-name` (emitted on any window)
 

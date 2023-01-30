@@ -1,6 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import { listen } from "@tauri-apps/api/event";
 import { invoke } from "@tauri-apps/api/tauri";
+import {
+  isPermissionGranted,
+  requestPermission,
+  sendNotification,
+} from "@tauri-apps/api/notification";
 
 import Image from "next/image";
 import tauriLogo from "../assets/app-icon.png";
@@ -18,11 +23,7 @@ import {
   Box,
 } from "@chakra-ui/react";
 
-import {
-  isPermissionGranted,
-  requestPermission,
-  sendNotification,
-} from "@tauri-apps/api/notification";
+
 
 import ContentAccordion from "../components/ContentAccordion";
 
@@ -104,6 +105,12 @@ function App() {
     }
   }
 
+  const testNewWindow = () => {
+    invoke("create_history_window")
+      .then((res) => console.log("Window started"))
+      .catch((err) => console.error(err));
+  };
+
   return (
     <ChakraProvider>
       <Container alignContent="center" w="100%" h="100%" bg="white">
@@ -126,6 +133,9 @@ function App() {
           spacing={4}
           align="stretch"
         >
+          <Center>
+            <Button onClick={testNewWindow}>Click me</Button>
+          </Center>
           <Center pt={"25px"}>
             <Text fontSize="small">
               Welcome to Instact, the app that analyzes your clipboard content
