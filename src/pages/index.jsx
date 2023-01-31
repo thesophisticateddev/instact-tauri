@@ -23,8 +23,6 @@ import {
   Box,
 } from "@chakra-ui/react";
 
-
-
 import ContentAccordion from "../components/ContentAccordion";
 
 function App() {
@@ -187,15 +185,11 @@ function App() {
           <Box key={item.id}>
             <>
               <Text>
-                <strong>ID: </strong>
-                {item.id}
-              </Text>
-              <Text>
-                <strong>Message: </strong>
+                <strong>Content: </strong>
                 {item.message}
               </Text>
               <Text>
-                <strong>Process: </strong>
+                <strong>Source: </strong>
                 {item.process}
               </Text>
               <Divider border="1px solid" borderColor="black" />
